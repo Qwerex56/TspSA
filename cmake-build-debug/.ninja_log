@@ -1,0 +1,26 @@
+# ninja log v6
+1	8	7556584441844396	clean	869e198d4c9f154
+39	798	7561746537066264	CMakeFiles/TspSA.dir/Graph/Graph.cpp.obj	7b2f5d4b9889ea7d
+35	1148	7561746537025257	CMakeFiles/TspSA.dir/Graph/AsymmetricalGraph.cpp.obj	457222da0ffccbed
+3	1380	7561746536716451	CMakeFiles/TspSA.dir/main.cpp.obj	e7078cf5d16c7d8e
+42	1409	7561746537097545	CMakeFiles/TspSA.dir/Graph/SymmetricalGraph.cpp.obj	f6716142da4240b2
+48	1567	7561746537169921	CMakeFiles/TspSA.dir/TspAlgoBase/TspAlgoBase.cpp.obj	e13490084cc72d56
+45	1608	7561746537128278	CMakeFiles/TspSA.dir/TspAlgoBase/NearestNeighbour/TspNearestNeighbour.cpp.obj	d7c8811ef97cab0a
+32	1667	7561746536994427	CMakeFiles/TspSA.dir/TspAlgoBase/SimulatedAnnealing/TspSimulatedAnnealing.cpp.obj	f3336c07cb4791f3
+1667	2073	7561746553348893	TspSA.exe	93650d603d0fb68f
+4	1355	7561749713691086	CMakeFiles/TspSA.dir/TspAlgoBase/SimulatedAnnealing/TspSimulatedAnnealing.cpp.obj	f3336c07cb4791f3
+1355	1584	7561749727193348	TspSA.exe	93650d603d0fb68f
+4	1321	7561753029644688	CMakeFiles/TspSA.dir/TspAlgoBase/SimulatedAnnealing/TspSimulatedAnnealing.cpp.obj	f3336c07cb4791f3
+1322	1550	7561753042821672	TspSA.exe	93650d603d0fb68f
+5	1338	7561761098968337	CMakeFiles/TspSA.dir/TspAlgoBase/SimulatedAnnealing/TspSimulatedAnnealing.cpp.obj	f3336c07cb4791f3
+1338	1585	7561761112293039	TspSA.exe	93650d603d0fb68f
+5	1382	7561763381659120	CMakeFiles/TspSA.dir/TspAlgoBase/SimulatedAnnealing/TspSimulatedAnnealing.cpp.obj	f3336c07cb4791f3
+1382	1639	7561763395433014	TspSA.exe	93650d603d0fb68f
+4	1337	7561765318946008	CMakeFiles/TspSA.dir/TspAlgoBase/SimulatedAnnealing/TspSimulatedAnnealing.cpp.obj	f3336c07cb4791f3
+1337	1568	7561765332284500	TspSA.exe	93650d603d0fb68f
+5	1366	7561768064195004	CMakeFiles/TspSA.dir/TspAlgoBase/SimulatedAnnealing/TspSimulatedAnnealing.cpp.obj	f3336c07cb4791f3
+1366	1595	7561768077808840	TspSA.exe	93650d603d0fb68f
+5	1263	7561768685778447	CMakeFiles/TspSA.dir/TspAlgoBase/SimulatedAnnealing/TspSimulatedAnnealing.cpp.obj	f3336c07cb4791f3
+1263	1488	7561768698354493	TspSA.exe	93650d603d0fb68f
+5	1274	7561769576486583	CMakeFiles/TspSA.dir/TspAlgoBase/SimulatedAnnealing/TspSimulatedAnnealing.cpp.obj	f3336c07cb4791f3
+1274	1500	7561769589178794	TspSA.exe	93650d603d0fb68f

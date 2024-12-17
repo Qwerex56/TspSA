@@ -1,0 +1,6 @@
+show_progress=1
+graph_path=.\ry48p.atsp
+is_symmetrical=0
+graph_config=.\ry48p.atsp
+max_work_time=1800
+optimal_solution=-1
