@@ -17,7 +17,7 @@ class TspAlgoBase {
   TspAlgoBase() = default;
   explicit TspAlgoBase(const std::string &conf_path, const std::string &graph_conf_path = "");
 
-  virtual std::vector<int> FindSolution() const = 0;
+  [[nodiscard]] virtual std::vector<int> FindSolution() const = 0;
 
  protected:
   std::string graph_path_;
@@ -34,8 +34,16 @@ class TspAlgoBase {
     return abs(optimal_solution_ - best_found_solution);
   }
 
+  [[nodiscard]] inline int GetResultDeviation(int found_solution_weight) const noexcept {
+    return abs(optimal_solution_ - found_solution_weight);
+  }
+
   [[nodiscard]] inline float GetPercentDeviation() const noexcept {
     return ((float) GetResultDeviation() / (float) optimal_solution_) * 100.0f;
+  }
+
+  [[nodiscard]] inline float GetPercentDeviation(int found_solution_weight) const noexcept {
+    return ((float) GetResultDeviation(found_solution_weight) / (float) optimal_solution_) * 100.0f;
   }
 
   static std::vector<int> CreateVerticesVector(int vertices_count, int start_point);
@@ -45,9 +53,9 @@ class TspAlgoBase {
   [[nodiscard]] int GetPathWeight(const std::vector<int> &path) const;
 
   void SaveToFile(const std::vector<int> &path,
-                         int travel_weight,
-                         double elapsed_seconds,
-                         const std::string &algorithm = "Result.txt") const;
+                  int travel_weight,
+                  double elapsed_seconds,
+                  const std::string &algorithm = "Result.txt") const;
 };
 
 } // algo

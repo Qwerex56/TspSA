@@ -4,23 +4,107 @@
 
 #include <cmath>
 #include <numeric>
-#include <cmath>
 #include <random>
 #include <iostream>
+#include <fstream>
 
 #include "TspSimulatedAnnealing.h"
+#include "StateGenStrategy/SwapStateGenStrategy.h"
+#include "TemperatureCoolingStrategy/GeometricCoolingStrategy.h"
+#include "TemperatureCoolingStrategy/LinearCoolingStrategy.h"
+#include "StateGenStrategy/ReverseStateGenStrategy.h"
+#include "StateGenStrategy/InsertStateGenStrategy.h"
 
 namespace pea_tsp::algo {
 
 TspSimulatedAnnealing::TspSimulatedAnnealing(const std::string &conf_path, const std::string &graph_conf_path)
     : TspAlgoBase(conf_path, graph_conf_path) {
-  nn_algorithm = TspNearestNeighbour(conf_path, false, graph_conf_path);
+  auto file = std::fstream{conf_path};
+
+  if (!file.is_open()) {
+    std::cout << "Could not open config file\n";
+  } else {
+    std::string line;
+    std::string graph_config;
+
+    while (!file.eof()) {
+      std::getline(file, line);
+
+      std::stringstream str_stream{line};
+      std::string token;
+      std::vector<std::string> tokens;
+
+      while (std::getline(str_stream, token, '=')) {
+        tokens.emplace_back(token);
+      }
+
+      if (tokens[0] == "acceptance_probability") {
+        acceptance_probability_ = std::stof(tokens[1]);
+      } else if (tokens[0] == "cooling_rate") {
+        cooling_rate_ = std::stof(tokens[1]);
+      } else if (tokens[0] == "end_temperature") {
+        end_temperature_ = std::stof(tokens[1]);
+      } else if (tokens[0] == "iterations_per_temperature") {
+        iterations_per_temperature_ = std::stoi(tokens[1]);
+      } else if (tokens[0] == "temp_strategy") {
+        switch (std::stoi(tokens[1])) {
+          case 0:
+            temperature_cooling_strategy_ = new sa_helpers::LinearCoolingStrategy(cooling_rate_);
+            std::cout << "Linear cooling\n";
+            break;
+          case 1:
+          default:
+            temperature_cooling_strategy_ = new sa_helpers::GeometricCoolingStrategy(cooling_rate_);
+            std::cout << "Geometric cooling\n";
+            break;
+        }
+      } else if (tokens[0] == "gen_strategy") {
+        switch (std::stoi(tokens[1])) {
+          case 0:
+            state_gen_strategy_ = new sa_helpers::SwapStateGenStrategy();
+            std::cout << "Swap gen\n";
+            break;
+          case 1:
+            state_gen_strategy_ = new sa_helpers::ReverseStateGenStrategy();
+            std::cout << "Reverse gen\n";
+
+            break;
+          case 2:
+            state_gen_strategy_ = new sa_helpers::InsertStateGenStrategy();
+            std::cout << "Insert gen\n";
+
+            break;
+          default:
+            state_gen_strategy_ = new sa_helpers::SwapStateGenStrategy();
+            std::cout << "Swap gen\n";
+
+            break;
+        }
+      } else if (tokens[0] == "use_nn_as_bound") {
+        auto do_use_nn = std::stoi(tokens[1]);
+        if (do_use_nn == 1) {
+          nn_algorithm = new TspNearestNeighbour(conf_path, false, graph_conf_path);
+          std::cout << "Use nn\n";
+        } else {
+          nn_algorithm = nullptr;
+          std::cout << "Use random\n";
+        }
+      }
+    }
+  }
 }
 
 std::vector<int> TspSimulatedAnnealing::FindSolution() const {
-  auto temperature = CalcFirstTemperature(0.8f, 25);
+  const auto initial_temperature = CalcFirstTemperature(acceptance_probability_, 100);
+  auto temperature = initial_temperature;
   auto current_state = GetFirstState();
   current_state.pop_back();
+
+  auto best_found_state = current_state;
+  best_found_state.emplace_back(best_found_state.front());
+
+  auto current_time{std::chrono::steady_clock::now()};
+  const auto start_time{std::chrono::steady_clock::now()};
 
   auto rand_float = []() -> float {
     auto random_device = std::random_device{};
@@ -30,40 +114,96 @@ std::vector<int> TspSimulatedAnnealing::FindSolution() const {
     return (float) r_dist(gen);
   };
 
-  while (temperature > 0.1f) {
-    auto next_state = GetNextState(current_state);
+  while (temperature > end_temperature_) {
+    auto max_iterations = CalcIterationsPerTemperature(temperature, initial_temperature);
 
-    current_state.emplace_back(current_state.front());
-    next_state.emplace_back(next_state.front());
+    for (auto iteration = 1; iteration <= max_iterations; ++iteration) {
+      auto next_state = (*state_gen_strategy_)(current_state);
 
-    auto current_fit = CalcStateFit(current_state);
-    auto next_fit = CalcStateFit(next_state);
+      current_state.emplace_back(current_state.front());
+      next_state.emplace_back(next_state.front());
 
-    auto distance_delta = next_fit - current_fit;
-    auto acceptance_factor = CalcAcceptanceProbability(current_state, next_state, temperature);
+      auto current_fit = CalcStateFit(current_state);
+      auto next_fit = CalcStateFit(next_state);
 
-    if (distance_delta < 0 || acceptance_factor >= rand_float()) {
-      current_state = next_state;
-    }
+      auto distance_delta = next_fit - current_fit;
+      auto acceptance_factor = CalcAcceptanceProbability(current_state, next_state, temperature);
 
-    current_state.pop_back();
-    temperature *= cooling_rate;
+      if (distance_delta < 0 || acceptance_factor >= rand_float()) {
+        current_state = next_state;
 
-    if (do_show_progress_) {
-      std::cout << "Current weight: " << current_fit << "\tTemperature: " << temperature << "\tAcceptance factor: "
-                << acceptance_factor << "\n\t";
-      for (const auto vert : current_state) {
-        std::cout << vert << " ";
+        if (next_fit < CalcStateFit(best_found_state)) {
+          best_found_state = current_state;
+        }
       }
-      std::cout << current_state.front() << "\n\n";
+
+      current_state.pop_back();
+
+      if (do_show_progress_) {
+        std::cout << "Current weight: " << current_fit << "\tTemperature: " << temperature << "\tAcceptance factor: "
+                  << acceptance_factor << "\n\t";
+        for (const auto vert : current_state) {
+          std::cout << vert << " ";
+        }
+
+        std::cout << "\nBest found:\n\t";
+        for (const auto vert : best_found_state) {
+          std::cout << vert << " ";
+        }
+
+        std::cout << current_state.front() << "\n\n";
+      }
+
+      current_time = std::chrono::steady_clock::now();
+
+      if (std::chrono::duration_cast<std::chrono::seconds>(current_time - start_time).count()
+          >= max_time.count()) {
+        std::cout << "Current weight: " << current_fit << "\tTemperature: " << temperature << "\tAcceptance factor: "
+                  << acceptance_factor << "\n";
+        goto END_ALGO;
+      }
     }
+    temperature = (*temperature_cooling_strategy_)(temperature);
   }
+
+  END_ALGO:
+  std::cout << "\tTemperature: " << temperature << "\n\t";
+  std::cout << "\nCurrent found:\n\t";
+
+  current_state.emplace_back(current_state.front());
+
+  for (const auto vert : current_state) {
+    std::cout << vert << " ";
+  }
+  std::cout << "\nPath weight: " << CalcStateFit(current_state);
+
+  std::cout << "\nBest found:\n\t";
+  for (const auto vert : best_found_state) {
+    std::cout << vert << " ";
+  }
+  std::cout << "\nPath weight: " << CalcStateFit(best_found_state);
+
+  std::cout << "\nCurrent result delta: " << GetResultDeviation(CalcStateFit(current_state))
+            << "\n Percent diff: " << GetPercentDeviation(CalcStateFit(current_state)) << "%";
+  std::cout << "\nBest result delta: " << GetResultDeviation(CalcStateFit(best_found_state))
+            << "\n Percent diff: " << GetPercentDeviation(CalcStateFit(best_found_state)) << "%";
 
   return current_state;
 }
 
 std::vector<int> TspSimulatedAnnealing::GetFirstState() const {
-  return nn_algorithm.FindSolution();
+  if (nn_algorithm != nullptr) {
+    return nn_algorithm->FindSolution();
+  }
+
+  std::random_device rd;
+  std::mt19937 g(rd());
+
+  auto state = std::vector<int>(graph_->GetDimension());
+  std::iota(state.begin(), state.end(), 1);
+  std::shuffle(state.begin(), state.end(), g);
+
+  return state;
 }
 
 float TspSimulatedAnnealing::CalcFirstTemperature(float desired_acceptance, int max_iterations) const {
@@ -82,7 +222,7 @@ float TspSimulatedAnnealing::CalcFirstTemperature(float desired_acceptance, int 
       std::iota(state.begin(), state.end(), 1);
       std::shuffle(state.begin(), state.end(), g);
 
-      auto next_state = GetNextState(state);
+      auto next_state = (*state_gen_strategy_)(state);
 
       state.emplace_back(state.front());
       next_state.emplace_back(next_state.front());
@@ -123,17 +263,15 @@ float TspSimulatedAnnealing::CalcAcceptanceProbability(const std::vector<int> &c
   return std::exp(-delta / temperature);
 }
 
-std::vector<int> TspSimulatedAnnealing::GetNextState(const std::vector<int> &current_state) {
-  auto random_device = std::random_device{};
-  auto gen = std::mt19937(random_device());
-  auto r_dist = std::uniform_int_distribution<>(0, (int) current_state.size() - 1);
+int TspSimulatedAnnealing::CalcIterationsPerTemperature(float current_temperature, float initial_temperature) const {
+  auto base_iterations = graph_->GetDimension() * iterations_per_temperature_;
+  auto adjusted_iterations = (float) base_iterations * (current_temperature / initial_temperature);
 
-  auto next_state = std::vector<int>(current_state.size());
-  std::move(current_state.begin(), current_state.end(), next_state.begin());
+  if (adjusted_iterations < 1.0f) {
+    adjusted_iterations = 1.0f;
+  }
 
-  std::iter_swap(next_state.begin() + r_dist(gen), next_state.begin() + r_dist(gen));
-
-  return next_state;
+  return (int) adjusted_iterations;
 }
 
 } // algo

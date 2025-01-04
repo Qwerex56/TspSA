@@ -56,7 +56,6 @@ TspAlgoBase::TspAlgoBase(const std::string &conf_path, const std::string &graph_
     if (is_symmetrical_) {
       graph_ = new pea_tsp::SymmetricalGraph(graph_path_);
     } else {
-      std::cout << graph_path_;
       graph_ = new pea_tsp::AsymmetricalGraph(graph_path_);
     }
   }

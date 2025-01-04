@@ -16,4 +16,18 @@ add_executable(TspSA main.cpp
         TspAlgoBase/NearestNeighbour/TspNearestNeighbour.h
         TspAlgoBase/TspAlgoBase.cpp
         TspAlgoBase/TspAlgoBase.h
+        TspAlgoBase/SimulatedAnnealing/StateGenStrategy/StateGenStrategy.cpp
+        TspAlgoBase/SimulatedAnnealing/StateGenStrategy/StateGenStrategy.h
+        TspAlgoBase/SimulatedAnnealing/StateGenStrategy/SwapStateGenStrategy.cpp
+        TspAlgoBase/SimulatedAnnealing/StateGenStrategy/SwapStateGenStrategy.h
+        TspAlgoBase/SimulatedAnnealing/StateGenStrategy/ReverseStateGenStrategy.cpp
+        TspAlgoBase/SimulatedAnnealing/StateGenStrategy/ReverseStateGenStrategy.h
+        TspAlgoBase/SimulatedAnnealing/StateGenStrategy/InsertStateGenStrategy.cpp
+        TspAlgoBase/SimulatedAnnealing/StateGenStrategy/InsertStateGenStrategy.h
+        TspAlgoBase/SimulatedAnnealing/TemperatureCoolingStrategy/TemperatureCoolingStrategy.cpp
+        TspAlgoBase/SimulatedAnnealing/TemperatureCoolingStrategy/TemperatureCoolingStrategy.h
+        TspAlgoBase/SimulatedAnnealing/TemperatureCoolingStrategy/LinearCoolingStrategy.cpp
+        TspAlgoBase/SimulatedAnnealing/TemperatureCoolingStrategy/LinearCoolingStrategy.h
+        TspAlgoBase/SimulatedAnnealing/TemperatureCoolingStrategy/GeometricCoolingStrategy.cpp
+        TspAlgoBase/SimulatedAnnealing/TemperatureCoolingStrategy/GeometricCoolingStrategy.h
 )
