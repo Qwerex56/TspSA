@@ -91,8 +91,9 @@ void TspAlgoBase::SaveToFile(const std::vector<int> &path,
 
   for (const auto &node : path) file << node << " ";
 
-  file << ";" << travel_weight << ";" << elapsed_seconds << ";" << best_found_solution << ";" << GetPercentDeviation()
-       << ";" << algorithm << "\n";
+  file << ";" << travel_weight << ";" << elapsed_seconds << ";" << GetPercentDeviation(travel_weight)
+       << ";" << GetResultDeviation(travel_weight) << ";" << optimal_solution_
+       << ";\n";
 }
 
 int TspAlgoBase::GetPathWeight(const std::vector<int> &path) const {

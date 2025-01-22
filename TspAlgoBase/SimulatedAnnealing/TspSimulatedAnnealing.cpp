@@ -103,8 +103,8 @@ std::vector<int> TspSimulatedAnnealing::FindSolution() const {
   auto best_found_state = current_state;
   best_found_state.emplace_back(best_found_state.front());
 
-  auto current_time{std::chrono::steady_clock::now()};
   const auto start_time{std::chrono::steady_clock::now()};
+  auto current_time{std::chrono::steady_clock::now()};
 
   auto rand_float = []() -> float {
     auto random_device = std::random_device{};
@@ -171,6 +171,10 @@ std::vector<int> TspSimulatedAnnealing::FindSolution() const {
   std::cout << "\nCurrent found:\n\t";
 
   current_state.emplace_back(current_state.front());
+
+  SaveToFile(best_found_state,
+             GetPathWeight(best_found_state),
+             std::chrono::duration_cast<std::chrono::milliseconds>(current_time - start_time).count());
 
   for (const auto vert : current_state) {
     std::cout << vert << " ";
